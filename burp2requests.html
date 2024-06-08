@@ -68,15 +68,15 @@
             }
             data = data.trim();
 
-            const url = `http://${host}${path}`;
+            const url = `https://${host}${path}`;
 
-            let pythonCode = `import requests\n\nurl = "${url}"\n`;
+            let pythonCode = `import requests\n\nurl = "${url}"\n\n`;
             pythonCode += `headers = ${JSON.stringify(headers, null, 4)}\n`;
 
             if (method.toUpperCase() === 'GET') {
-                pythonCode += `response = requests.get(url, headers=headers)\n`;
+                pythonCode += `\nresponse = requests.get(url, headers=headers)\n`;
             } else if (method.toUpperCase() === 'POST') {
-                pythonCode += `\ndata = """${data}"""\n\n`;
+                pythonCode += `\ndata = """${data}"""\n`;
                 pythonCode += `\nresponse = requests.post(url, headers=headers, data=data)\n`;
             }
 
