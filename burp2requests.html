@@ -33,7 +33,7 @@
     </style>
 </head>
 <body>
-    <h1>Burp to Python Requests Converter by n0mi1k (v1.0)</h1>
+    <h1>Burp Suite to Python Requests Converter</h1>
     <textarea id="burpRequest" placeholder="Paste Burp Suite request here"></textarea>
     <button onclick="convertRequest()">Convert to Python Requests</button>
     <h2>Python Requests Code</h2>
@@ -69,15 +69,20 @@
             data = data.trim();
 
             const url = `https://${host}${path}`;
-
-            let pythonCode = `import requests\n\nurl = "${url}"\n\n`;
-            pythonCode += `headers = ${JSON.stringify(headers, null, 4)}\n`;
+            const contentType = headers['Content-Type'] || headers['content-type'];
+            let pythonCode = `import requests\n\nurl = "${url}"\n`;
+            pythonCode += `\nheaders = ${JSON.stringify(headers, null, 4)}\n`;
 
             if (method.toUpperCase() === 'GET') {
                 pythonCode += `\nresponse = requests.get(url, headers=headers)\n`;
             } else if (method.toUpperCase() === 'POST') {
-                pythonCode += `\ndata = """${data}"""\n`;
-                pythonCode += `\nresponse = requests.post(url, headers=headers, data=data)\n`;
+                if (contentType && contentType.includes('application/json')) {
+                    pythonCode += `\njson_data = ${data}\n`;
+                    pythonCode += `\nresponse = requests.post(url, headers=headers, json=json_data)\n`;
+                } else {
+                    pythonCode += `\ndata = """${data}"""\n`;
+                    pythonCode += `\nresponse = requests.post(url, headers=headers, data=data)\n`;
+                }
             }
 
             pythonCode += `\nprint(response.status_code)\n`;

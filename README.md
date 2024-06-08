@@ -6,5 +6,4 @@ A simple tool that converts Burpsuite requests into Python for replicating in th
 
 ## Current HTTP Methods Supported
 - GET
-- POST
-- More to be added
+- POST (Supports JSON data)
