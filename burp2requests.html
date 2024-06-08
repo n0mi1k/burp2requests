@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burp Suite to Python Requests Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        button {
+            display: block;
+            margin: 0 auto 20px;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;       /* CSS3 */
+            white-space: -moz-pre-wrap;  /* Firefox */
+            white-space: -pre-wrap;      /* Opera <7 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* IE */
+        }
+    </style>
+</head>
+<body>
+    <h1>Burp to Python Requests Converter by n0mi1k (v1.0)</h1>
+    <textarea id="burpRequest" placeholder="Paste Burp Suite request here"></textarea>
+    <button onclick="convertRequest()">Convert to Python Requests</button>
+    <h2>Python Requests Code</h2>
+    <pre id="pythonCode"></pre>
+
+    <script>
+        function convertRequest() {
+            const burpRequest = document.getElementById('burpRequest').value;
+            const lines = burpRequest.split('\n');
+            let method, path, host = '', headers = {}, data = '';
+
+            const firstLine = lines.shift().split(' ');
+            method = firstLine[0];
+            path = firstLine[1];
+
+            let isHeader = true;
+            for (const line of lines) {
+                if (isHeader && line.trim() === '') {
+                    isHeader = false;
+                    continue;
+                }
+                if (isHeader) {
+                    const [key, value] = line.split(': ');
+                    if (key.toLowerCase() === 'host') {
+                        host = value;
+                    } else {
+                        headers[key] = value;
+                    }
+                } else {
+                    data += line + '\n';
+                }
+            }
+            data = data.trim();
+
+            const url = `http://${host}${path}`;
+
+            let pythonCode = `import requests\n\nurl = "${url}"\n`;
+            pythonCode += `headers = ${JSON.stringify(headers, null, 4)}\n`;
+
+            if (method.toUpperCase() === 'GET') {
+                pythonCode += `response = requests.get(url, headers=headers)\n`;
+            } else if (method.toUpperCase() === 'POST') {
+                pythonCode += `\ndata = """${data}"""\n\n`;
+                pythonCode += `\nresponse = requests.post(url, headers=headers, data=data)\n`;
+            }
+
+            pythonCode += `\nprint(response.status_code)\n`;
+            pythonCode += `print(response.headers)\n`;
+            pythonCode += `print(response.text)`;
+
+            document.getElementById('pythonCode').textContent = pythonCode;
+        }
+    </script>
+</body>
+</html>
